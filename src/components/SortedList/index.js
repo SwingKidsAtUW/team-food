@@ -12,10 +12,14 @@ class SortedList extends Component {
         {
           this.props.data.map((element) => {
             let key = Object.values(element).toString()
+            let rank = `Rank: ${element.rank}`;
+            if (typeof element.rank === "string") {
+              rank = element.rank;
+            }
 
             return (
               <li className="list-group-item" key={key} >
-                <span className="badge">Rank: {element.rank}</span>
+                <span className="badge">{rank}</span>
                 {element.name}
               </li>
             )

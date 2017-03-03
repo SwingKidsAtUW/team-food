@@ -36,7 +36,7 @@ const SortableList = ({ items, onChange }) => {
         // @param {Object} sortable The sortable instance.
         // @param {Event} evt The event object.
         onChange={(order, sortable, evt) => {
-            onChange(order);
+          onChange(order);
         }}
       >
         {listItems}

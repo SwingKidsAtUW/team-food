@@ -1,11 +1,18 @@
 .sortable-ghost {
-  background-color: red;
+  background-color: black;
 }
 
 .sortable-chosen {
-  background-color: blue;
+  z-index: 2;
+  color: #fff;
+  background-color: #337ab7;
+  border-color: #337ab7;
 }
 
 .sortable-drag {
-  background-color: green;
+  color: #777;
+  cursor: not-allowed;
+  background-color: #eee;
+  border-color: #eee;
 }
+

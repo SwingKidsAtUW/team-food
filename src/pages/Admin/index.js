@@ -18,13 +18,15 @@ class Admin extends Component {
     let key = `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}`;
 
     this.state = {
+      ready: false,
       user: null,
       userChecked: false,
       dayRef: firebase.database().ref("days").child(key),
       nominations: [],
-      ballots: [],
+      ballots: {},
       pollsOpen: false,
-      pollsClosed: false
+      pollsClosed: false,
+      results: []
     }
 
     firebase.auth().onAuthStateChanged((user) => {
@@ -43,19 +45,53 @@ class Admin extends Component {
       let nominations = Object.values(today.nominations || {});
       let pollsOpen = today.pollsOpen;
       let pollsClosed = today.pollsClosed;
-      let results = [];
+      let ballots = this.state.ballots;
+      let results = this.state.results;
 
-      if (pollsOpen && pollsClosed && today.ballots) {
-        results = IRV(today.ballots);
+      if (pollsOpen && today.ballots) {
+        ballots = today.ballots;
+      }
+
+      if (pollsOpen && pollsClosed && today.results) {
+        results = today.results;
+      }
+
+      if (pollsOpen && pollsClosed && today.ballots && (!today.winner || !today.results) && !this.counting) {
+        this.countBallots(ballots);
       }
 
       this.setState({
+        ready: true,
         nominations: nominations,
-        results: results,
         pollsOpen: pollsOpen,
-        pollsClosed: pollsClosed
+        pollsClosed: pollsClosed,
+        ballots: ballots,
+        results: results
       })
     });
+  }
+
+  countBallots(ballots) {
+    this.counting = true;
+    ballots = ballots || this.state.ballots;
+    this.state.dayRef.update({
+      "results": null,
+      "winner": null
+    });
+    if (!ballots || Object.keys(ballots).length === 0) {
+      this.counting = false;
+      return;
+    }
+    let results = IRV(ballots);
+    if (results.length < 1) {
+      this.counting = false;
+      return;
+    }
+    this.state.dayRef.update({
+      "results": results,
+      "winner": results[0].name
+    });
+    this.counting = false;
   }
 
   login() {
@@ -70,6 +106,9 @@ class Admin extends Component {
   }
 
   submit(location) {
+    if (location.length === 0) {
+      return false;
+    }
     this.state.dayRef.child("nominations").push(location)
   }
 
@@ -81,8 +120,15 @@ class Admin extends Component {
     this.state.dayRef.child("pollsClosed").set(true);
   }
 
+  resetBallots() {
+    this.state.dayRef.child("ballots").remove();
+  }
+
   reOpenPolls() {
-    this.state.dayRef.child("pollsClosed").set(false);
+    this.state.dayRef.update({
+      "pollsClosed": false,
+      "winner": null
+    });
   }
 
   render() {
@@ -96,34 +142,44 @@ class Admin extends Component {
           </div>
 
           { !this.state.userChecked &&
-            <p>Checking Login State</p>
+            <p className="text-center">Checking Login State</p>
           }
 
           { this.state.userChecked && this.state.user == null &&
             <ButtonBar onClick={() => this.login()} text="Login with Gmail" />
           }
 
-          { this.state.userChecked && this.state.user != null &&
+          { this.state.userChecked && this.state.user != null && this.state.ready &&
             <div>
-              <ButtonBar onClick={() => this.logout()} text="Logout" />
-              { !this.state.pollsClosed &&
-                <UnSortedList data={this.state.nominations} />
-              }
-              { !this.state.pollsOpen && !this.state.pollsClosed &&
-                <NewLocationForm submit={(location) => this.submit(location)} />
-              }
-              { this.state.pollsOpen && this.state.pollsClosed &&
-                <SortedList locations={this.state.nominations} data={this.state.results} />
+              {/*<ButtonBar onClick={() => this.logout()} text="Logout" />*/}
+
+              {/* Before Voting */}
+              { !this.state.pollsOpen &&
+                <div>
+                  <h4>Current Nominations:</h4>
+                  <UnSortedList data={this.state.nominations} />
+                  <NewLocationForm submit={(location) => this.submit(location)} />
+                  <ButtonBar onClick={() => this.openPolls()} text="Open Polls" />
+                </div>
               }
 
-              { !this.state.pollsOpen && !this.state.pollsClosed &&
-                <ButtonBar onClick={() => this.openPolls()} text="Open Polls" />
-              }
+              {/* During Voting */}
               { this.state.pollsOpen && !this.state.pollsClosed &&
-                <ButtonBar onClick={() => this.closePolls()} text="Close Polls" />
+                <div>
+                  <p className="text-center">{Object.keys(this.state.ballots).length} people voting</p>
+                  <UnSortedList data={this.state.nominations} />
+                  <ButtonBar onClick={() => this.resetBallots()} text="Reset Ballots" />
+                  <ButtonBar onClick={() => this.closePolls()} text="Close Polls" />
+                </div>
               }
+
+              {/* After Voting */}
               { this.state.pollsOpen && this.state.pollsClosed &&
-                <ButtonBar onClick={() => this.reOpenPolls()} text="ReOpen Polls" />
+                <div>
+                  <SortedList locations={this.state.nominations} data={this.state.results} />
+                  <ButtonBar onClick={() => this.countBallots()} text="Re Count" />
+                  <ButtonBar onClick={() => this.reOpenPolls()} text="ReOpen Polls" />
+                </div>
               }
             </div>
           }

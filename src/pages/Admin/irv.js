@@ -39,7 +39,12 @@ const IRV = (ballots) => {
     round < 10 &&
     !(results[0].votes > (ballotCount / 2))
   ) {
-    // console.log(results[0].votes > (ballotCount / 2));
+    // console.log("Round:", round, "Voted needed to win:", (ballotCount / 2));
+    results.forEach((result) => {
+      // console.log(`Location: ${result.name}, Votes: ${result.votes}`);
+    })
+    // console.log("");
+    // eslint-disable-next-line
     let lastplace = results.filter((result) => {
       return result.votes === results.slice(-1)[0].votes;
     });
@@ -49,21 +54,20 @@ const IRV = (ballots) => {
         return question += `${index + 1}) ${place.name} \n`;
       }, "There was an unbreakable tie, which one should be eliminated? \n");
       looser = window.prompt(question);
+      if (!looser) {
+        return [];
+      }
+      looser = parseInt(looser, 10);
+      if (looser > lastplace.length) {
+        window.alert("Invalid Index, Please recount.");
+        return [];
+      }
     }
     eliminated.push(lastplace[looser - 1].name);
     rounds.push(results.slice());
     results = runRound(ballots, eliminated);
     round++;
   }
-
-  // console.log(rounds);
-
-  rounds.forEach((round, index) => {
-    // console.log(`Round: ${index + 1}`);
-    round.forEach((location) => {
-      // console.log(`Location: ${location.name}, Votes: ${location.votes}`);
-    });
-  })
 
   results = results.concat(eliminated.reverse()).map((result, index) => {
     return {
@@ -72,7 +76,16 @@ const IRV = (ballots) => {
     }
   });
 
-  // console.log(results)
+  results = results.concat(Object.values(Object.values(ballots)[0]).filter((vote) => {
+    return !results.find((result) => {
+      return result.name === vote.name;
+    })
+  }).map((invalid) => {
+    return {
+      name: invalid.name,
+      rank: "No Votes"
+    }
+  }))
 
   return results;
 }

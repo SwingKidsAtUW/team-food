@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import './style.css';
 
 import firebase from 'firebase';
-import ButtonBar from '../../components/ButtonBar';
 import SortableList from '../../components/SortableList';
 
 class App extends Component {
@@ -20,7 +19,8 @@ class App extends Component {
       pollsClosed: false,
       myVotes: [],
       rawBallot: {},
-      listner: () => {}
+      listner: () => {},
+      winner: null
     }
 
     firebase.auth().onAuthStateChanged((user) => {
@@ -58,20 +58,23 @@ class App extends Component {
         return;
       }
 
-      let myVotes = [];
-      let rawBallot = {};
+      let myVotes = this.state.myVotes;
+      let rawBallot = this.state.rawBallot;
 
       if (pollsOpen  && !pollsClosed && today.ballots && today.ballots[this.state.user.uid]) {
         myVotes = Object.values(today.ballots[this.state.user.uid]);
         rawBallot = today.ballots[this.state.user.uid];
       }
 
+      let winner = today.winner;
+
       this.setState({
         nominations: nominations,
         pollsOpen: pollsOpen,
         pollsClosed: pollsClosed,
         myVotes: myVotes,
-        rawBallot: rawBallot
+        rawBallot: rawBallot,
+        winner: winner
       })
     });
   }
@@ -100,25 +103,28 @@ class App extends Component {
 
           <div className="row">
             <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-              <ButtonBar onClick={() => this.logout()} text="Logout" />
-              <p>{this.state.user && this.state.user.uid}</p>
-              <p>{this.state.pollsOpen ? "Open" : "Not Open"}</p>
-              <p>{this.state.pollsClosed ? "Closed" : "Not Closed"}</p>
              {
                 !this.state.pollsOpen &&
-                <p>Please wait for voting to start.</p>
+                <p className="text-center">Please wait for voting to start.</p>
              }
              {
                this.state.pollsOpen && !this.state.pollsClosed &&
-                <SortableList
-                  items={this.state.myVotes}
-                  onChange={(items) => this.rankItems(items)}
-                >
-                </SortableList>
+               <div>
+                  <p className="text-center">Rank you choices.</p>
+                  <SortableList
+                    items={this.state.myVotes}
+                    onChange={(items) => this.rankItems(items)}
+                  >
+                  </SortableList>
+               </div>
              }
              {
-                this.state.pollsOpen && this.state.pollsClosed &&
-                <p>Tabulating Results</p>
+                this.state.pollsOpen && this.state.pollsClosed && !this.state.winner &&
+                <p className="text-center">Tabulating Results</p>
+             }
+             {
+                this.state.pollsOpen && this.state.pollsClosed && this.state.winner &&
+                <p className="text-center">The Winner is {this.state.winner}</p>
              }
             </div>
           </div>

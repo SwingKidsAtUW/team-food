@@ -10,14 +10,15 @@ class NewLocationForm extends Component {
   render() {
     return (
 
-      <form role="form" onSubmit={(e) => this.submit(e)} >
-        <legend>Add New Location</legend>
+      <form className="NewLocationForm" role="form" onSubmit={(e) => this.submit(e)} >
 
-        <div className="form-group">
-          <input ref="name" type="text" className="form-control" placeholder="Name" />
+        <div className="input-group">
+          <input ref="name" type="text" className="form-control" placeholder="New Location" />
+          <span className="input-group-btn">
+            <button type="submit" className="btn btn-default">Submit</button>
+          </span>
         </div>
 
-        <button type="submit" className="btn btn-primary">Submit</button>
       </form>
 
     );
