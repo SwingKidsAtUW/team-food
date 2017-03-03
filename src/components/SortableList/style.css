@@ -1,0 +1,11 @@
+.sortable-ghost {
+  background-color: red;
+}
+
+.sortable-chosen {
+  background-color: blue;
+}
+
+.sortable-drag {
+  background-color: green;
+}
