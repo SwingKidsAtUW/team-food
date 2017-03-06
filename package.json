@@ -2,11 +2,14 @@
   "name": "team-food",
   "version": "0.1.0",
   "private": true,
+  "homepage": "http://students.washington.edu/swingkd/team-food/",
   "devDependencies": {
-    "react-scripts": "0.9.3"
+    "react-scripts": "0.9.3",
+    "rsync": "^0.6.1"
   },
   "dependencies": {
     "firebase": "^3.7.0",
+    "history": "^3.0.0",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-modal-dialog": "^4.0.7",
@@ -17,6 +20,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "deploy": "node ./scripts/deploy.js",
+    "publish": "npm run build; npm run deploy;",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   }

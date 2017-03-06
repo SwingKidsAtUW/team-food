@@ -8,6 +8,9 @@ class SortedList extends Component {
         {
           this.props.data.map((element) => (
             <li className="list-group-item" key={element} >
+              { this.props.delete &&
+                <span onClick={() => this.props.delete(element)} className="badge">&times;</span>
+              }
               {element}
             </li>
           ))

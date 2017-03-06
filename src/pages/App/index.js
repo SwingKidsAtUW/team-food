@@ -3,6 +3,7 @@ import './style.css';
 
 import firebase from 'firebase';
 import SortableList from '../../components/SortableList';
+import UnSortedList from '../../components/UnSortedList';
 
 class App extends Component {
   constructor(props) {
@@ -103,11 +104,20 @@ class App extends Component {
 
           <div className="row">
             <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-             {
+              {/* Before Polls Open */}
+              {
                 !this.state.pollsOpen &&
-                <p className="text-center">Please wait for voting to start.</p>
-             }
-             {
+                <div>
+                  <p className="text-center">Please wait for voting to start.</p>
+                  { this.state.nominations.length > 0 &&
+                    <p>Current Nominations:</p>
+                  }
+                  <UnSortedList data={this.state.nominations} />
+                </div>
+              }
+
+              {/* While Polls are open */}
+              {
                this.state.pollsOpen && !this.state.pollsClosed &&
                <div>
                   <p className="text-center">Rank you choices.</p>
@@ -118,10 +128,14 @@ class App extends Component {
                   </SortableList>
                </div>
              }
+
+             {/* While counting ballots */}
              {
                 this.state.pollsOpen && this.state.pollsClosed && !this.state.winner &&
                 <p className="text-center">Tabulating Results</p>
              }
+
+             {/* Winner */}
              {
                 this.state.pollsOpen && this.state.pollsClosed && this.state.winner &&
                 <p className="text-center">The Winner is {this.state.winner}</p>

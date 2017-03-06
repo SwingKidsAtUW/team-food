@@ -18,7 +18,6 @@ class Admin extends Component {
     let key = `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}`;
 
     this.state = {
-      ready: false,
       user: null,
       userChecked: false,
       dayRef: firebase.database().ref("days").child(key),
@@ -42,32 +41,20 @@ class Admin extends Component {
       if (!today) {
         return;
       }
-      let nominations = Object.values(today.nominations || {});
-      let pollsOpen = today.pollsOpen;
-      let pollsClosed = today.pollsClosed;
-      let ballots = this.state.ballots;
-      let results = this.state.results;
 
-      if (pollsOpen && today.ballots) {
-        ballots = today.ballots;
+      let updateState = JSON.parse(JSON.stringify({
+        nominations: Object.values(today.nominations || {}),
+        pollsOpen: today.pollsOpen,
+        pollsClosed: today.pollsClosed,
+        ballots: today.ballots,
+        results: today.results
+      }))
+
+      if (today.pollsOpen && today.pollsClosed && today.ballots && !today.winner && !this.counting) {
+        this.countBallots(today.ballots);
       }
 
-      if (pollsOpen && pollsClosed && today.results) {
-        results = today.results;
-      }
-
-      if (pollsOpen && pollsClosed && today.ballots && (!today.winner || !today.results) && !this.counting) {
-        this.countBallots(ballots);
-      }
-
-      this.setState({
-        ready: true,
-        nominations: nominations,
-        pollsOpen: pollsOpen,
-        pollsClosed: pollsClosed,
-        ballots: ballots,
-        results: results
-      })
+      this.setState(updateState)
     });
   }
 
@@ -106,29 +93,54 @@ class Admin extends Component {
   }
 
   submit(location) {
-    if (location.length === 0) {
+    var exists = this.state.nominations.find((nomination) => {
+      return nomination === location;
+    });
+    if (location.length === 0 || exists) {
       return false;
     }
     this.state.dayRef.child("nominations").push(location)
   }
 
+  unOpenPolls() {
+    this.state.dayRef.update({
+      "pollsOpen": false,
+      "pollsClosed": false,
+      "ballots": null,
+      "results": null,
+      "winner": null
+    });
+  }
+
   openPolls() {
-    this.state.dayRef.child("pollsOpen").set(true);
+    this.state.dayRef.update({
+      "pollsOpen": true,
+      "pollsClosed": false,
+      "results": null,
+      "winner": null
+    });
   }
 
   closePolls() {
-    this.state.dayRef.child("pollsClosed").set(true);
+    this.state.dayRef.update({
+      "pollsOpen": true,
+      "pollsClosed": true,
+      "results": null,
+      "winner": null
+    });
   }
 
   resetBallots() {
     this.state.dayRef.child("ballots").remove();
   }
 
-  reOpenPolls() {
-    this.state.dayRef.update({
-      "pollsClosed": false,
-      "winner": null
-    });
+  deleteNomination(location) {
+    if (!window.confirm(`Delete ${location}?`)) {
+      return;
+    }
+    this.state.dayRef.child("nominations").set(this.state.nominations.filter((nomination) => {
+      return nomination !== location;
+    }));
   }
 
   render() {
@@ -149,7 +161,7 @@ class Admin extends Component {
             <ButtonBar onClick={() => this.login()} text="Login with Gmail" />
           }
 
-          { this.state.userChecked && this.state.user != null && this.state.ready &&
+          { this.state.userChecked && this.state.user != null &&
             <div>
               {/*<ButtonBar onClick={() => this.logout()} text="Logout" />*/}
 
@@ -157,7 +169,7 @@ class Admin extends Component {
               { !this.state.pollsOpen &&
                 <div>
                   <h4>Current Nominations:</h4>
-                  <UnSortedList data={this.state.nominations} />
+                  <UnSortedList data={this.state.nominations} delete={(item) => this.deleteNomination(item)} />
                   <NewLocationForm submit={(location) => this.submit(location)} />
                   <ButtonBar onClick={() => this.openPolls()} text="Open Polls" />
                 </div>
@@ -170,6 +182,7 @@ class Admin extends Component {
                   <UnSortedList data={this.state.nominations} />
                   <ButtonBar onClick={() => this.resetBallots()} text="Reset Ballots" />
                   <ButtonBar onClick={() => this.closePolls()} text="Close Polls" />
+                  <ButtonBar onClick={() => this.unOpenPolls()} text="Edit Nominations" />
                 </div>
               }
 
@@ -178,7 +191,7 @@ class Admin extends Component {
                 <div>
                   <SortedList locations={this.state.nominations} data={this.state.results} />
                   <ButtonBar onClick={() => this.countBallots()} text="Re Count" />
-                  <ButtonBar onClick={() => this.reOpenPolls()} text="ReOpen Polls" />
+                  <ButtonBar onClick={() => this.openPolls()} text="ReOpen Polls" />
                 </div>
               }
             </div>
