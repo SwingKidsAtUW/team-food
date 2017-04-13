@@ -120,7 +120,7 @@ class App extends Component {
               {
                this.state.pollsOpen && !this.state.pollsClosed &&
                <div>
-                  <p className="text-center">Rank you choices.</p>
+                  <p className="text-center">Drag to rank your choices.</p>
                   <SortableList
                     items={this.state.myVotes}
                     onChange={(items) => this.rankItems(items)}
