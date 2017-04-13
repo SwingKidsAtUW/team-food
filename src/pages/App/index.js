@@ -21,7 +21,8 @@ class App extends Component {
       myVotes: [],
       rawBallot: {},
       listner: () => {},
-      winner: null
+      winner: null,
+      showResults: false
     }
 
     firebase.auth().onAuthStateChanged((user) => {
@@ -68,6 +69,7 @@ class App extends Component {
       }
 
       let winner = today.winner;
+      let showResults = today.showResults;
 
       this.setState({
         nominations: nominations,
@@ -75,7 +77,8 @@ class App extends Component {
         pollsClosed: pollsClosed,
         myVotes: myVotes,
         rawBallot: rawBallot,
-        winner: winner
+        winner: winner,
+        showResults: showResults
       })
     });
   }
@@ -131,14 +134,23 @@ class App extends Component {
 
              {/* While counting ballots */}
              {
-                this.state.pollsOpen && this.state.pollsClosed && !this.state.winner &&
-                <p className="text-center">Tabulating Results</p>
+                this.state.pollsOpen && this.state.pollsClosed && (!this.state.winner || (this.state.winner && !this.state.showResults)) &&
+                <div>
+                  <h4 className="text-center">Tabulating Results</h4>
+                  <p className="text-center">The cats are working as fast as they can...</p>
+                  <img src="https://media.giphy.com/media/o0vwzuFwCGAFO/giphy.gif" className="img-responsive tabulating-cat" alt="Tabulating Cat" align="middle" />
+                </div>
              }
 
              {/* Winner */}
              {
-                this.state.pollsOpen && this.state.pollsClosed && this.state.winner &&
-                <p className="text-center">The Winner is {this.state.winner}</p>
+                this.state.pollsOpen && this.state.pollsClosed && this.state.winner && this.state.showResults &&
+                <div>
+                  <p className="text-center">The Winner is...</p>
+                  <h4 className="text-center">{this.state.winner}</h4>
+                  <img src="https://media.giphy.com/media/peAFQfg7Ol6IE/giphy.gif" className="img-responsive tabulating-cat" alt="Tabulating Cat" align="middle" />
+                  <p className="text-center">Thanks for playing!!</p>
+                </div>
              }
             </div>
           </div>

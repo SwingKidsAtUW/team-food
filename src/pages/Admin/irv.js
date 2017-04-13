@@ -86,8 +86,10 @@ const IRV = (ballots) => {
       rank: "No Votes"
     }
   }))
-
-  return results;
+  return {
+    results,
+    eliminated
+  };
 }
 
 export default IRV;

@@ -25,6 +25,7 @@ class Admin extends Component {
       ballots: {},
       pollsOpen: false,
       pollsClosed: false,
+      showResults: false,
       results: []
     }
 
@@ -47,7 +48,8 @@ class Admin extends Component {
         pollsOpen: today.pollsOpen,
         pollsClosed: today.pollsClosed,
         ballots: today.ballots,
-        results: today.results
+        results: today.results,
+        showResults: today.showResults
       }))
 
       if (today.pollsOpen && today.pollsClosed && today.ballots && !today.winner && !this.counting) {
@@ -63,19 +65,21 @@ class Admin extends Component {
     ballots = ballots || this.state.ballots;
     this.state.dayRef.update({
       "results": null,
+      "eliminated": null,
       "winner": null
     });
     if (!ballots || Object.keys(ballots).length === 0) {
       this.counting = false;
       return;
     }
-    let results = IRV(ballots);
+    let {results, eliminated} = IRV(ballots);
     if (results.length < 1) {
       this.counting = false;
       return;
     }
     this.state.dayRef.update({
       "results": results,
+      "eliminated": eliminated,
       "winner": results[0].name
     });
     this.counting = false;
@@ -108,6 +112,7 @@ class Admin extends Component {
       "pollsClosed": false,
       "ballots": null,
       "results": null,
+      "eliminated": null,
       "winner": null
     });
   }
@@ -117,6 +122,7 @@ class Admin extends Component {
       "pollsOpen": true,
       "pollsClosed": false,
       "results": null,
+      "eliminated": null,
       "winner": null
     });
   }
@@ -126,7 +132,14 @@ class Admin extends Component {
       "pollsOpen": true,
       "pollsClosed": true,
       "results": null,
+      "eliminated": null,
       "winner": null
+    });
+  }
+
+  showResults() {
+    this.state.dayRef.update({
+      "showResults": !this.state.showResults
     });
   }
 
@@ -192,6 +205,7 @@ class Admin extends Component {
                   <SortedList locations={this.state.nominations} data={this.state.results} />
                   <ButtonBar onClick={() => this.countBallots()} text="Re Count" />
                   <ButtonBar onClick={() => this.openPolls()} text="ReOpen Polls" />
+                  <ButtonBar onClick={() => this.showResults()} text="Show Results" />
                 </div>
               }
             </div>
