@@ -113,7 +113,8 @@ class Admin extends Component {
       "ballots": null,
       "results": null,
       "eliminated": null,
-      "winner": null
+      "winner": null,
+      "showResults": false,
     });
   }
 
@@ -123,7 +124,8 @@ class Admin extends Component {
       "pollsClosed": false,
       "results": null,
       "eliminated": null,
-      "winner": null
+      "winner": null,
+      "showResults": false,
     });
   }
 
@@ -133,7 +135,8 @@ class Admin extends Component {
       "pollsClosed": true,
       "results": null,
       "eliminated": null,
-      "winner": null
+      "winner": null,
+      "showResults": false,
     });
   }
 
