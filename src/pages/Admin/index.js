@@ -195,7 +195,10 @@ class Admin extends Component {
               { this.state.pollsOpen && !this.state.pollsClosed &&
                 <div>
                   <p className="text-center">{Object.keys(this.state.ballots).length} people voting</p>
-                  <UnSortedList data={this.state.nominations} />
+                  {/*<UnSortedList data={this.state.nominations} />*/}
+                  <div className="embed-responsive embed-responsive-4by3 voting-frame">
+                    <iframe className="embed-responsive-item" src="../"></iframe>
+                  </div>
                   <ButtonBar onClick={() => this.resetBallots()} text="Reset Ballots" />
                   <ButtonBar onClick={() => this.closePolls()} text="Close Polls" />
                   <ButtonBar onClick={() => this.unOpenPolls()} text="Edit Nominations" />
